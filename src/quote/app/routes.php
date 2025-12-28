@@ -58,6 +58,7 @@ return function (App $app) {
         $data = calculateQuote($jsonObject);
 
         $payload = json_encode($data);
+
         $response->getBody()->write($payload);
 
         $span->addEvent('Quote processed, response sent back', [
