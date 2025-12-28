@@ -730,10 +730,12 @@ services:
     container_name: jaeger
     command:
       - "--memory.max-traces=25000"
-      - "--query.base-path=/jaeger/ui"
+      # - "--query.base-path=/jaeger/ui"
       - "--prometheus.server-url=http://${PROMETHEUS_ADDR}"
       - "--prometheus.query.normalize-calls=true"
       - "--prometheus.query.normalize-duration=true"
+      - "--query.http-server.host-port=:16686"
+      - "--admin.http.host-port=:14269"
     deploy:
       resources:
         limits:
@@ -742,6 +744,8 @@ services:
     ports:
       - "${JAEGER_PORT}"         # Jaeger UI
       - "${OTEL_COLLECTOR_PORT_GRPC}"
+      - "18686:16686"            # Jaeger UI and API (high port to avoid conflicts)
+      - "18269:14269"            # Jaeger Admin API (high port to avoid conflicts)
     environment:
       - METRICS_STORAGE_TYPE=prometheus
     logging: *logging
