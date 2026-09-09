@@ -15,8 +15,8 @@ const transactionsCounter = meter.createCounter('app.payment.transactions');
 
 const LOYALTY_LEVEL = ['platinum', 'gold', 'silver', 'bronze'];
 
-/** Return random element from given array */
-function random(arr) {
+/** Pick a uniformly random element from the given array */
+function pickRandom(arr) {
   const index = Math.floor(Math.random() * arr.length);
   return arr[index];
 }
@@ -26,11 +26,11 @@ module.exports.charge = async request => {
 
   await OpenFeature.setProviderAndWait(flagProvider);
 
-  const numberVariant =  await OpenFeature.getClient().getNumberValue("paymentFailure", 0);
+  const failureRate = await OpenFeature.getClient().getNumberValue("paymentFailure", 0);
 
-  if (numberVariant > 0) {
-    // n% chance to fail with app.loyalty.level=gold
-    if (Math.random() < numberVariant) {
+  if (failureRate > 0) {
+    // Fail this fraction of requests, tagged app.loyalty.level=gold
+    if (Math.random() < failureRate) {
       span.setAttributes({'app.loyalty.level': 'gold' });
       span.end();
 
@@ -51,7 +51,7 @@ module.exports.charge = async request => {
   const card = cardValidator(number);
   const { card_type: cardType, valid } = card.getCardDetails();
 
-  const loyalty_level = random(LOYALTY_LEVEL);
+  const loyalty_level = pickRandom(LOYALTY_LEVEL);
 
   span.setAttributes({
     'app.payment.card_type': cardType,
@@ -71,7 +71,7 @@ module.exports.charge = async request => {
     throw new Error(`The credit card (ending ${lastFourDigits}) expired on ${month}/${year}.`);
   }
 
-  // Check baggage for synthetic_request=true, and add charged attribute accordingly
+  // Synthetic (load-generator) requests are marked via baggage; don't count them as real charges
   const baggage = propagation.getBaggage(context.active());
   if (baggage && baggage.getEntry('synthetic_request') && baggage.getEntry('synthetic_request').value === 'true') {
     span.setAttribute('app.payment.charged', false);
