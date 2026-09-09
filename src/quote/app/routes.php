@@ -49,7 +49,7 @@ function calculateQuote($jsonObject): float
 }
 
 return function (App $app) {
-    $app->post('/getquote', function (Request $request, Response $response, LoggerInterface $logger) {
+    $app->post('/getqute', function (Request $request, Response $response, LoggerInterface $logger) {
         $span = Span::getCurrent();
         $span->addEvent('Received get quote request, processing it');
 
