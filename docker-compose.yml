@@ -457,7 +457,11 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT
       - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
       - OTEL_RESOURCE_ATTRIBUTES
+      - OTEL_LOGS_EXPORTER=otlp
       - OTEL_SERVICE_NAME=payment
+    volumes:
+      # Patched to register a log exporter (prebuilt 2.0.2 image lacks it)
+      - ./src/payment/opentelemetry.js:/usr/src/app/opentelemetry.js:ro
     depends_on:
       otel-collector:
         condition: service_started
