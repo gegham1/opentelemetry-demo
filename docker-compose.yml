@@ -859,7 +859,7 @@ services:
         soft: 65536
         hard: 65536
     ports:
-      - "9200"
+      - "19200:9200"             # OpenSearch API (pinned high port; cotracer.yaml points here)
     healthcheck:
       test: curl -s http://localhost:9200/_cluster/health | grep -E '"status":"(green|yellow)"'
       start_period: 10s
